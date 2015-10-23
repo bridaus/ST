@@ -60,12 +60,19 @@ private sendEvent(evt) {
     log.info state.body.size()
     if (state.body.size()  >= uploadCount) {
         def body = state.body.collect { it }.join(',')
-        def uri = "http://${apiKey}:@plotwatt.com/api/v2/push_readings"
-            def params = [
-                uri: uri,
-                body: body
-            ] 
-        log.debug "Posting last ${uploadCount} events to ${uri}"
+	def userpassascii = "${apiKey}:"
+	def userpass = "Basic " + userpassascii.encodeAsBase64().toString()
+	def headers = [:]
+	headers.put("Authorization", userpass)
+
+	def uri = "http://plotwatt.com/api/v2/push_readings"
+	def params = [
+		uri: uri,
+		body: body,
+		headers: headers
+	] 
+
+	log.debug "Posting last ${uploadCount} events to ${uri}"
         state.body = []
         httpPost(params) { response ->
             log.info "httpPost responce:${response.status}"
